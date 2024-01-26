@@ -1,0 +1,38 @@
+﻿@* <h3>NewContact</h3>
+
+@if (Contacts!.Count == 0)
+{
+    <div>
+        <button type="button" @onclick="DropdownClick" class="btn btn-secondary ">
+            Dropdown button
+        </button>
+        <div>
+            @if (DropdownOpen)
+            {
+                <a class="dropdown-item" href="#">Action</a>
+                <a class="dropdown-item" href="#">Another action</a>
+                <a class="dropdown-item" href="#">Something else here</a>
+            }
+            else
+            {
+                <div>Something is @DropdownOpen</div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    foreach (var contact in Contacts!)
+    {
+        <div class="row">
+            <span class="bi bi-person-fill"></span>
+            @contact.ContactUser.UserName
+        </div>
+    }
+}
+
+@code {
+    //public List<Contact>? Contacts { get; set; } = [];
+    private bool DropdownOpen { get; set; }
+}
+ *@

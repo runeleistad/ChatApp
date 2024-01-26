@@ -1,0 +1,26 @@
+﻿.right-sidemenu {
+    position: sticky;
+    right: 0;
+    top: 0;
+    width: 15rem;
+    height: 100vh;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+ul {
+    list-style: none;
+    padding: 0px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+ul li:hover {
+    background-color: dimgrey;
+    cursor: pointer;
+}
+
+ul li span {
+    padding-left: 10px;
+    padding-right: 10px;
+}

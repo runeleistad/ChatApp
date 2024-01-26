@@ -1,0 +1,35 @@
+﻿@inherits LayoutComponentBase
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row">
+            <AuthorizeView>
+                <Authorized>
+                    <NavLink class="nav-link" href="Account/Manage">
+                        <span class="bi bi-person-fill" aria-hidden="true"></span> @context.User.Identity?.Name
+                    </NavLink>
+                </Authorized>
+                <NotAuthorized>
+                    <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+                </NotAuthorized>
+            </AuthorizeView>
+        </div>
+
+        <div class="content">
+            @Body
+        </div>
+    </main>
+    <div class="contact-sidebar">
+        <ContactSideBar />
+    </div>
+</div>
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>

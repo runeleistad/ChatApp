@@ -1,0 +1,94 @@
+﻿@rendermode InteractiveServer
+
+@using ChatApp.Components.Pages
+@using ChatApp.Services
+@using ChatApp.Data.Models
+
+@inject NavigationManager Navigation
+@inject ChatService ChatService
+
+<ConfirmationModal @ref="Modal" OnCloseCallback="GetContacts" />
+<div class="text-white bg-dark right-sidemenu">
+    <div style="padding-top: 10px;">
+        @if (Contacts!.Count > 0)
+        {
+            <div>List all your God damn contacts!</div>
+            <ul>
+                @foreach (Contact contact in Contacts)
+                {
+                    <li @onclick="() => GoToChat(contact.ContactUser.Id)"><span class="bi bi-person"></span>@contact.ContactUser.Email</li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p>It appears you don't have any friends.</p>
+        }
+        <button type="button" @onclick="DropdownClick" class="btn btn-secondary ">
+            Add new contact
+            <span class="bi @DropdownClass"></span>
+        </button>
+        <div class="dropdown-menu-dark">
+            @if (DropdownOpen)
+            {
+                <input @oninput="SearchForUser" placeholder="Contact email.." />
+                <br />
+                @if (FriendResult.Count > 0)
+                {
+                    <ul>
+                        @foreach (ApplicationUser friend in FriendResult)
+                        {
+
+                            <li @onclick="() => Modal.Open(friend)"><span class="bi bi-person"></span>@friend.Email</li>
+                        }
+                    </ul>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<Contact> Contacts { get; set; } = [];
+    private List<ApplicationUser> FriendResult { get; set; } = [];
+    private bool DropdownOpen { get; set; }
+    private string DropdownClass { get; set; } = "bi-chevron-down";
+    private bool OpenModal { get; set; }
+
+    private ConfirmationModal Modal { get; set; }
+
+    private async Task GoToChat(string contactId)
+    {
+        Console.WriteLine("GoToChat");
+        long chatRoomId = await ChatService.GetChatRoomIdByContact(contactId);
+        Navigation.NavigateTo($"/chat/{chatRoomId}");
+    }
+
+    //public void Dispose() => this.Dispose();
+
+    private async Task GetContacts()
+    {
+        Contacts = await ChatService.GetAllContacts();
+    }
+
+    private async Task SearchForUser(ChangeEventArgs e)
+    {
+        if (!string.IsNullOrEmpty((string?)e.Value))
+            FriendResult = await ChatService.SearchForNewContact(e.Value!.ToString());
+    }
+
+    private void DropdownClick()
+    {
+        DropdownOpen = !DropdownOpen;
+        if (DropdownOpen)
+            DropdownClass = "bi-chevron-up";
+        else
+            DropdownClass = "bi-chevron-down";
+        StateHasChanged();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await GetContacts();
+    }
+}

@@ -1,0 +1,23 @@
+﻿@attribute [Authorize]
+@rendermode InteractiveServer
+@page "/"
+
+@using Microsoft.AspNetCore.Authorization
+@using ChatApp.Services
+@using ChatApp.Data.Models
+
+@inject ChatService chatService
+
+<PageTitle>Chat</PageTitle>
+
+<div class="container" style="margin-right: unset !important; padding-right: 0">
+    <div class="row">
+        <div class="col-10">
+            Home page
+        </div>
+    </div>
+</div>
+
+@code {
+
+}

@@ -1,0 +1,88 @@
+﻿@attribute [Authorize]
+
+@page "/chat/{RoomId}"
+@rendermode InteractiveServer
+@using ChatApp.Components.Pages
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.SignalR.Client
+@using ChatApp.Data.Models
+@using ChatApp.Services
+@inject NavigationManager Navigation
+@inject MessageService messageService
+@inject ChatService chatService
+
+<PageTitle>Chat</PageTitle>
+
+<div class="chat-main">
+    @if(Messages.Count < 1)
+    {
+        <p>
+            No messages
+        </p>
+    }
+    <div style="flex-direction: column-reverse; width: 100%;">
+        <div class="chat-container">
+        
+            @foreach (Message message in Messages)
+            {
+                <div class="@(message.SenderId == userId ? "message-sent" : "message-received")">
+                    @message.Content
+                    <div class="message-footer">@message.SentTime.ToString("dd-MM-yy HH:mm:ss")</div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="sender">
+        <input @bind="NewMessage" placeholder="Type your message.." />
+        <button @onclick="SendMessage" disabled="@(!IsConnected)">Send</button>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string RoomId { get; set; }
+
+    private List<Contact> Contacts { get; set; } = [];
+    private Room? room { get; set; }
+    private List<Message> Messages { get; set; } = [];
+    private string NewMessage { get; set; } = string.Empty;
+    private HubConnection? hubConnection;
+    private string userId => chatService.GetCurrentUserId()!;
+
+    public bool IsConnected => hubConnection?.State == HubConnectionState.Connected;
+
+    private async Task SendMessage()
+    {
+        Console.WriteLine($"{hubConnection is not null}");
+        if(hubConnection is not null)
+        {
+            await hubConnection.SendAsync("SendMessage", userId, long.Parse(RoomId), NewMessage);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if(hubConnection is not null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        room = await messageService.GetRoomById(long.Parse(RoomId));
+        Messages = await messageService.GetMessagesFromRoom(long.Parse(RoomId));
+
+        hubConnection = new HubConnectionBuilder().WithUrl(Navigation.ToAbsoluteUri("/chathub")).Build();
+        hubConnection.On<string, string>("ReceiveMessage", (fromUser, message) =>
+        {
+            Messages.Insert(0, new Message { Content = message, SenderId = fromUser });
+            InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+
+        await hubConnection.SendAsync("JoinRoom", long.Parse(RoomId));
+        Contacts = await chatService.GetAllContacts();
+    }
+}
